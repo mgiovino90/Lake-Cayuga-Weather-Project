@@ -6,6 +6,7 @@ import os
 import datetime
 import time
 import json
+import requests
 
 
 # make the bigquery client and job config
@@ -50,7 +51,16 @@ def read_coords(file):
 
 
 # upload data to bigquery
-
+def upload_data(lat, long, api, table):
+    url1= f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&units=imperial&appid={api}"
+    try:
+        response= requests.get(url= url1)
+        data= response.json()
+        temp= data['main']['temp']
+        humid= data['main']['humidity']
+        wind= data['wind']['speed']
+    except Exception as error1:
+        logger.error(f"Error {error1} occurred.")
 
 if __name__=="__main__":
 
