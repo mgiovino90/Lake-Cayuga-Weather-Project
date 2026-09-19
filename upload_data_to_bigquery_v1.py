@@ -7,6 +7,7 @@ import datetime
 import time
 import json
 import requests
+import pandas as pd
 
 
 # make the bigquery client and job config
@@ -15,6 +16,7 @@ job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
 
 # load the env file------------------------------------------------------------------------------------------------------
 load_dotenv()
+api= os.getenv("weather_api")
 
 # get todays date
 today= datetime.datetime.today()
@@ -34,6 +36,8 @@ logger.addHandler(handler)
 cities= ['aurora', 'cayuga', 'interlaken', 'ithaca', 'lansing', 'seneca_falls', 'union_springs']
 tables= [f"{i}_table" for i in cities]
 
+# columns
+cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr', 'Snow_mm_per_hr']
 
 # read latitude and longitude-----------------------------------------------------------------------------------
 def read_coords(file):
@@ -54,14 +58,23 @@ def read_coords(file):
 def upload_data(lat, long, api, table):
     url1= f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&units=imperial&appid={api}"
     try:
+        table_ref= bigquery.Table(table_ref= os.getenv(table))
         response= requests.get(url= url1)
         data= response.json()
         temp= data['main']['temp']
         humid= data['main']['humidity']
         wind= data['wind']['speed']
+        rain= data.get('rain', {}).get('1h', 0.0)
+        snow= data.get('snow', {}).get('1h', 0.0)
+        results= [today, temp, humid, wind, rain, snow]
+        df1= pd.DataFrame(data= [results], columns= cols)
+        job1= client.load_table_from_dataframe(dataframe= df1, destination= table_ref)
+        logger.info(f"{table} data uploaded successfully")
     except Exception as error1:
         logger.error(f"Error {error1} occurred.")
 
 if __name__=="__main__":
 
     lat_list, long_list= read_coords(file= os.getenv(key="coord_json"))
+    for i, j in enumerate(tables):
+        upload_data(lat= lat_list[i], long= long_list[i], api= api, table= j)
