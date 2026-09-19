@@ -13,7 +13,7 @@ tables= [f"{i}_table" for i in cities]
 client= bigquery.Client(os.getenv("proj_id"))
 
 # make schema
-cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr']
+cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr', 'Snow_mm_per_hr']
 schema1= []
 for i, j in enumerate(cols):
     if i==0:
