@@ -88,3 +88,5 @@ if __name__=="__main__":
     lat_list, long_list= read_coords(file= os.getenv(key="coord_json"))
     for i, j in enumerate(tables):
         upload_data(lat= lat_list[i], long= long_list[i], api= api, table= j)
+
+    time.sleep(3600)
