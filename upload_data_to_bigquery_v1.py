@@ -76,6 +76,7 @@ def read_coords(file):
 
 # upload data to bigquery
 def upload_data(lat, long, api, table):
+    now= datetime.datetime.today()
     url1= f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&units=imperial&appid={api}"
     try:
         table_ref= bigquery.Table(table_ref= os.getenv(table))
@@ -86,7 +87,7 @@ def upload_data(lat, long, api, table):
         wind= data['wind']['speed']
         rain= data.get('rain', {}).get('1h', 0.0)
         snow= data.get('snow', {}).get('1h', 0.0)
-        results= [today, temp, humid, wind, rain, snow]
+        results= [now, temp, humid, wind, rain, snow]
         df1= pd.DataFrame(data= [results], columns= cols)
         job1= client.load_table_from_dataframe(dataframe= df1, destination= table_ref, job_config= job_config)
         logger.info(f"{table} data uploaded successfully")
