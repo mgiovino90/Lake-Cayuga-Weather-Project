@@ -8,6 +8,7 @@ import time
 import json
 import requests
 import pandas as pd
+import sys
 
 
 # make the bigquery client and job config
@@ -15,7 +16,13 @@ client= bigquery.Client(project= os.getenv("proj_id"))
 job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
 
 # load the env file------------------------------------------------------------------------------------------------------
-load_dotenv()
+# meipass is temp dir for exe
+if getattr(sys, 'frozen', False):
+    proj_dir= os.path.dirname(sys._MEIPASS)
+else:
+    proj_dir= os.path.dirname(os.path.abspath(__file__))
+env_path= os.path.join(proj_dir, ".env")
+load_dotenv(dotenv_path= env_path)
 api= os.getenv("weather_api")
 
 # get todays date
@@ -68,7 +75,7 @@ def upload_data(lat, long, api, table):
         snow= data.get('snow', {}).get('1h', 0.0)
         results= [today, temp, humid, wind, rain, snow]
         df1= pd.DataFrame(data= [results], columns= cols)
-        job1= client.load_table_from_dataframe(dataframe= df1, destination= table_ref)
+        job1= client.load_table_from_dataframe(dataframe= df1, destination= table_ref, job_config= job_config)
         logger.info(f"{table} data uploaded successfully")
     except Exception as error1:
         logger.error(f"Error {error1} occurred.")
