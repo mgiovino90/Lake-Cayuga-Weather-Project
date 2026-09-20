@@ -11,23 +11,6 @@ import pandas as pd
 import sys
 
 
-# load the env file------------------------------------------------------------------------------------------------------
-# meipass is temp dir for exe
-if getattr(sys, 'frozen', False):
-    proj_dir= os.path.dirname(sys._MEIPASS)
-else:
-    proj_dir= os.path.dirname(os.path.abspath(__file__))
-env_path= os.path.join(proj_dir, ".env")
-load_dotenv(dotenv_path= env_path)
-api= os.getenv("weather_api")
-
-
-# make the bigquery client and job config
-client= bigquery.Client(project= os.getenv("proj_id"))
-job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
-
-
-
 # get todays date
 today= datetime.datetime.today()
 date_str= today.strftime("%m%d%y")
@@ -41,6 +24,30 @@ handler= logging.FileHandler(filename= logfile, mode= "a", encoding= 'utf-8')
 handler.setLevel(logging.INFO)
 handler.setFormatter(format1)
 logger.addHandler(handler)
+
+
+# load the env file------------------------------------------------------------------------------------------------------
+# meipass is temp dir for exe
+if getattr(sys, 'frozen', False):
+    proj_dir= os.path.dirname(sys.executable)
+else:
+    proj_dir= os.path.dirname(os.path.abspath(__file__))
+env_path= os.path.join(proj_dir, ".env")
+load_dotenv(dotenv_path= env_path)
+api= os.getenv("weather_api")
+
+
+# make the bigquery client and job config
+try:
+    client= bigquery.Client(project= os.getenv("proj_id"))
+    job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
+    #logger.info(f"Credentials loaded successfully")
+except Exception as error1:
+    logger.critical(f"Error {error1} occurred.  Couldn't load credentials.")
+    sys.exit()
+
+
+
 
 # get table ids and make table list
 cities= ['aurora', 'cayuga', 'interlaken', 'ithaca', 'lansing', 'seneca_falls', 'union_springs']
