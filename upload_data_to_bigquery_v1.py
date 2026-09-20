@@ -11,6 +11,17 @@ import pandas as pd
 import sys
 
 
+# load the env file------------------------------------------------------------------------------------------------------
+# meipass is temp dir for exe
+if getattr(sys, 'frozen', False):
+    proj_dir= os.path.dirname(sys.executable)
+else:
+    proj_dir= os.path.dirname(os.path.abspath(__file__))
+env_path= os.path.join(proj_dir, ".env")
+load_dotenv(dotenv_path= env_path)
+api= os.getenv("weather_api")
+
+
 # get todays date
 today= datetime.datetime.today()
 date_str= today.strftime("%m%d%y")
@@ -26,15 +37,7 @@ handler.setFormatter(format1)
 logger.addHandler(handler)
 
 
-# load the env file------------------------------------------------------------------------------------------------------
-# meipass is temp dir for exe
-if getattr(sys, 'frozen', False):
-    proj_dir= os.path.dirname(sys.executable)
-else:
-    proj_dir= os.path.dirname(os.path.abspath(__file__))
-env_path= os.path.join(proj_dir, ".env")
-load_dotenv(dotenv_path= env_path)
-api= os.getenv("weather_api")
+
 
 
 # make the bigquery client and job config
