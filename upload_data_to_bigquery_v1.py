@@ -11,10 +11,6 @@ import pandas as pd
 import sys
 
 
-# make the bigquery client and job config
-client= bigquery.Client(project= os.getenv("proj_id"))
-job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
-
 # load the env file------------------------------------------------------------------------------------------------------
 # meipass is temp dir for exe
 if getattr(sys, 'frozen', False):
@@ -24,6 +20,13 @@ else:
 env_path= os.path.join(proj_dir, ".env")
 load_dotenv(dotenv_path= env_path)
 api= os.getenv("weather_api")
+
+
+# make the bigquery client and job config
+client= bigquery.Client(project= os.getenv("proj_id"))
+job_config= bigquery.LoadJobConfig(write_disposition= "WRITE_APPEND")
+
+
 
 # get todays date
 today= datetime.datetime.today()
