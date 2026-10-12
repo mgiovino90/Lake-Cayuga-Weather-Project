@@ -12,9 +12,6 @@ load_dotenv()
 cred= os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 cred1= service_account.Credentials.from_service_account_file(cred)
 
-# make list of tables
-table_list= ['aurora_table', 'cayuga_table', 'interlaken_table', 'ithaca_table', 'lansing_table', 'seneca_falls_table', 'union_springs_table']
-
 
 # make bigquery client
 proj_id= os.getenv("proj_id")
@@ -47,4 +44,9 @@ storage_df= job1.result().to_dataframe()
 
 if storage_df.shape[0] > 0:
     storage_df.columns= ['Table', 'total_logical_KB', 'active_logical_KB', 'long_term_logical_KB', 'num_rows']
+    # get total storage for all tables
+    total1= pd.DataFrame(data= [['Total', storage_df['total_logical_KB'].sum(), storage_df['active_logical_KB'].sum(), storage_df['long_term_logical_KB'].sum(), 
+             '']], columns= storage_df.columns)
+    storage_df= pd.concat([storage_df, total1], axis= 0)
     print(storage_df.head(10))
+    
