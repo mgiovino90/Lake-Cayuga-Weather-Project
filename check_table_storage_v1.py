@@ -43,8 +43,6 @@ FROM region-us.INFORMATION_SCHEMA.TABLE_STORAGE;
 
 job1= client.query(q1)
 storage_df= job1.result().to_dataframe()
-#storage_df= result1
-#config1= bigquery.QueryJobConfig(query_parameters= [bigquery.ScalarQueryParameter(None, "STRING", os.getenv(j))])
 
 
 if storage_df.shape[0] > 0:
