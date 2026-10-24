@@ -1,10 +1,19 @@
+
 # import packages
 from google.cloud import bigquery
 from dotenv import load_dotenv
 import pandas as pd
 import os
 import sys
+import datetime
+from dash import Dash, html, dcc, callback, Output, Input
+import dash_ag_grid as dag
+import plotly.express as px
+import dash_bootstrap_components as dbc
 
+
+two_weeks= datetime.datetime.today() - datetime.timedelta(days= 14)
+two_weeks= two_weeks.replace(hour= 0, minute= 0, second= 0, microsecond= 0)
 
 # load the env file------------------------------------------------------------------------------------------------------
 # meipass is temp dir for exe
@@ -22,12 +31,37 @@ api_key= os.getenv('weather_api')
 client= bigquery.Client(project= os.getenv('proj_id'))
 
 
+# list of tables
 table_list= sorted(['aurora_table', 'cayuga_table', 'ithaca_table', 'interlaken_table', 'lansing_table', 'seneca_falls_table', 'union_springs_table'])
+#cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr', 'Snow_mm_per_hr']
 
-cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr', 'Snow_mm_per_hr']
-
+# list to store dataframe for each table for last 2 weeks
+all_dfs= []
+# loop to store weather data from last 2 weeks
 for i, j in enumerate(table_list):
-    q1= """SELECT *
-            FROM @table1;"""
+    table1= os.getenv(j)
+    # need the backticks to insert the table name
+    q1= f"""SELECT *
+            FROM `{table1}`
+            WHERE Date >= ?;""".format(j)
 
-    config1= bigquery.QueryJobConfig(query_parameters= [bigquery.ScalarQueryParameter("table1", 'STRING', j)])
+    config1= bigquery.QueryJobConfig(query_parameters= [bigquery.ScalarQueryParameter(None, 'DATETIME', two_weeks)])
+    results_df= client.query_and_wait(query= q1, job_config= config1).to_dataframe()
+    all_dfs.append(results_df)
+
+
+# initialize dash app
+#theme1= dbc.themes.
+#app= Dash(__name__, external_stylesheets= theme1)
+
+
+# setup the webpage
+cities= ['Aurora', 'Cayuga', 'Ithaca', 'Interlaken', 'Lansing', 'Seneca Falls', 'Union Springs']
+
+
+
+
+
+# main script
+#if __name__=="__main__":
+    #app.run()
