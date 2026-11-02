@@ -1,4 +1,5 @@
 
+#%%
 # import packages
 from google.cloud import bigquery
 from dotenv import load_dotenv
@@ -35,8 +36,11 @@ client= bigquery.Client(project= os.getenv('proj_id'))
 table_list= sorted(['aurora_table', 'cayuga_table', 'ithaca_table', 'interlaken_table', 'lansing_table', 'seneca_falls_table', 'union_springs_table'])
 #cols= ['Date', 'Temp_F', 'Humidity_percent', 'Wind_speed_mph', 'Rain_mm_per_hr', 'Snow_mm_per_hr']
 
-# list to store dataframe for each table for last 2 weeks
-all_dfs= []
+# city names for the dictionary
+cities= ['Aurora', 'Cayuga', 'Ithaca', 'Interlaken', 'Lansing', 'Seneca Falls', 'Union Springs']
+
+# empty dict to store weather data
+df_dict= {}
 # loop to store weather data from last 2 weeks
 for i, j in enumerate(table_list):
     table1= os.getenv(j)
@@ -47,21 +51,52 @@ for i, j in enumerate(table_list):
 
     config1= bigquery.QueryJobConfig(query_parameters= [bigquery.ScalarQueryParameter(None, 'DATETIME', two_weeks)])
     results_df= client.query_and_wait(query= q1, job_config= config1).to_dataframe()
-    all_dfs.append(results_df)
+    sort_df= results_df.sort_values(by= ['Date'])
+    df_dict[cities[i]]= sort_df
+
+
+
+
 
 
 # initialize dash app
-#theme1= dbc.themes.
-#app= Dash(__name__, external_stylesheets= theme1)
-
-
-# setup the webpage
-cities= ['Aurora', 'Cayuga', 'Ithaca', 'Interlaken', 'Lansing', 'Seneca Falls', 'Union Springs']
+theme1= dbc.themes.CYBORG
+app= Dash(__name__, external_stylesheets= [theme1])
 
 
 
 
+
+
+# make the layout
+app.layout= dbc.Container([
+    dbc.Row([
+        dbc.Col([
+            html.H1('Lake Cayuga Weather', className= "text-center")
+        ])
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Dropdown(options= cities, value= 'Ithaca', id= 'city_name')
+        ])
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(figure= px.line(df_dict['Ithaca'], x= 'Date', y= 'Temp_F', markers= True, labels= {'Temp_F':'Temperature (F)'}),
+                      id= 'temp_fig')
+        ])
+    ])
+])
+
+# update the figure based on the dropdown selection
+@callback(
+    Output(component_id= 'temp_fig', component_property= 'figure'),
+    Input(component_id= 'city_name', component_property= 'value')
+)
+def update_fig(city_sel):
+    fig= px.line(df_dict[city_sel], x= 'Date', y= 'Temp_F', markers= True, labels= {'Temp_F':'Temperature (F)'})
+    return fig
 
 # main script
-#if __name__=="__main__":
-    #app.run()
+if __name__=="__main__":
+    app.run(debug= True)
